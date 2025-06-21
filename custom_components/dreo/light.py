@@ -9,11 +9,11 @@ from homeassistant.components.light import (
     ATTR_HS_COLOR,
     ColorMode,
     LightEntity,
-    LightEntityFeature,
 )
 from homeassistant.util.color import hs_to_rgb, rgb_to_hs
 
-from .haimports import * from .pydreo import PyDreo, PyDreoCeilingFan
+from .haimports import *
+from .pydreo import PyDreo, PyDreoCeilingFan
 from .pydreo.constant import DreoDeviceType
 from .dreobasedevice import DreoBaseDeviceHA
 from .const import DOMAIN, PYDREO_MANAGER
@@ -21,7 +21,6 @@ from .const import DOMAIN, PYDREO_MANAGER
 _LOGGER = logging.getLogger(LOGGER)
 
 # Define color temperature range for Dreo fans (in Kelvin)
-# This is a typical range, adjust if your fan is different.
 DREO_FAN_LIGHT_MIN_KELVIN = 2700
 DREO_FAN_LIGHT_MAX_KELVIN = 5700
 
@@ -58,17 +57,22 @@ class DreoFanLight(DreoBaseDeviceHA, LightEntity):
         self._attr_color_mode = ColorMode.COLOR_TEMP
         self._attr_min_color_temp_kelvin = DREO_FAN_LIGHT_MIN_KELVIN
         self._attr_max_color_temp_kelvin = DREO_FAN_LIGHT_MAX_KELVIN
+        self._attr_supported_features = LightEntityFeature.TRANSITION
 
     @property
     def is_on(self) -> bool:
         return self.device.light_on
 
     @property
-    def brightness(self) -> int:
+    def brightness(self) -> int | None:
+        if self.device.brightness is None:
+            return None
         return int(self.device.brightness * 2.55)
 
     @property
-    def color_temp_kelvin(self) -> int:
+    def color_temp_kelvin(self) -> int | None:
+        if self.device.color_temp is None:
+            return None
         # Dreo uses a 0-100 scale. We map this to the Kelvin range.
         return int(self.device.color_temp / 100 * (self.max_color_temp_kelvin - self.min_color_temp_kelvin) + self.min_color_temp_kelvin)
 
@@ -103,12 +107,16 @@ class DreoFanRGBLight(DreoBaseDeviceHA, LightEntity):
         return self.device.atmon
 
     @property
-    def brightness(self) -> int:
+    def brightness(self) -> int | None:
+        if self.device.atmbri is None:
+            return None
         # Dreo atmosphere brightness is 1-5, mapping to 1-255
         return int((self.device.atmbri / 5.0) * 255)
 
     @property
-    def hs_color(self) -> tuple[float, float]:
+    def hs_color(self) -> tuple[float, float] | None:
+        if self.device.atmcolor is None:
+            return None
         # Dreo sends color as a single integer. Assuming it's BGR.
         color_int = self.device.atmcolor
         blue = color_int & 255
@@ -124,8 +132,10 @@ class DreoFanRGBLight(DreoBaseDeviceHA, LightEntity):
         if ATTR_HS_COLOR in kwargs:
             hs = kwargs[ATTR_HS_COLOR]
             r, g, b = hs_to_rgb(*hs)
-            # Reconstruct the integer value (assuming BGR)
-            self.device.atmcolor = (r << 16) | (g << 8) | b
+            # Reconstruct the integer value (assuming BGR, but Dreo might be RGB)
+            # Let's assume RGB for now as it's more common.
+            color_int = (r << 16) + (g << 8) + b
+            self.device.atmcolor = color_int
 
         if not self.is_on:
             self.device.atmon = True
