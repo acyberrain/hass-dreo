@@ -69,12 +69,26 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
         device_types.add(device.type)   
     _LOGGER.debug("Device types found are: %s", device_types)
     _LOGGER.info("%d Dreo devices found", len(pydreo_manager.devices))
-
+   
     platforms = set()
     if (DreoDeviceType.TOWER_FAN in device_types or 
         DreoDeviceType.AIR_CIRCULATOR in device_types or
-        DreoDeviceType.AIR_PURIFIER in device_types or
-        DreoDeviceType.CEILING_FAN in device_types):
+        DreoDeviceType.AIR_PURIFIER in device_types): # Keep existing fan logic
+        platforms.add(Platform.FAN)
+        platforms.add(Platform.SENSOR)
+        platforms.add(Platform.SWITCH)
+        platforms.add(Platform.NUMBER)
+
+    if DreoDeviceType.CEILING_FAN in device_types:
+        platforms.add(Platform.FAN)
+        platforms.add(Platform.LIGHT)
+        platforms.add(Platform.SENSOR)
+        platforms.add(Platform.SWITCH)
+        platforms.add(Platform.NUMBER)
+
+    if (DreoDeviceType.TOWER_FAN in device_types or 
+        DreoDeviceType.AIR_CIRCULATOR in device_types or
+        DreoDeviceType.AIR_PURIFIER in device_types):
         platforms.add(Platform.FAN)
         platforms.add(Platform.SENSOR)
         platforms.add(Platform.SWITCH)
