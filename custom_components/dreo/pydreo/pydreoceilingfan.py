@@ -1,5 +1,3 @@
-"""Dreo API for controling fans."""
-
 import logging
 from typing import TYPE_CHECKING, Dict
 
@@ -9,6 +7,11 @@ from .constant import (
     LIGHTON_KEY,
     WINDLEVEL_KEY,
     SPEED_RANGE,
+    BRIGHTNESS_KEY, # New
+    COLORTEMP_KEY,  # New
+    ATMON_KEY,      # New
+    ATMBRI_KEY,     # New
+    ATMCOLOR_KEY    # New
 )
 
 from .pydreofanbase import PyDreoFanBase
@@ -38,6 +41,11 @@ class PyDreoCeilingFan(PyDreoFanBase):
 
         self._fan_speed = None
         self._light_on = None
+        self._brightness = None
+        self._color_temp = None
+        self._atmon = None
+        self._atmbri = None
+        self._atmcolor = None
 
         self._wind_type = None
         self._wind_mode = None
@@ -83,6 +91,61 @@ class PyDreoCeilingFan(PyDreoFanBase):
         self._send_command(LIGHTON_KEY, value)
 
     @property
+    def brightness(self):
+        """Return the brightness of the light"""
+        return self._brightness
+
+    @brightness.setter
+    def brightness(self, value: int):
+        """Set the brightness of the light"""
+        _LOGGER.debug("PyDreoCeilingFan:brightness.setter - %s", value)
+        self._send_command(BRIGHTNESS_KEY, value)
+
+    @property
+    def color_temp(self):
+        """Return the color temperature of the light"""
+        return self._color_temp
+
+    @color_temp.setter
+    def color_temp(self, value: int):
+        """Set the color temperature of the light"""
+        _LOGGER.debug("PyDreoCeilingFan:color_temp.setter - %s", value)
+        self._send_command(COLORTEMP_KEY, value)
+
+    @property
+    def atmon(self):
+        """Return the state of the atmosphere light"""
+        return self._atmon
+
+    @atmon.setter
+    def atmon(self, value: bool):
+        """Set the state of the atmosphere light"""
+        _LOGGER.debug("PyDreoCeilingFan:atmon.setter - %s", value)
+        self._send_command(ATMON_KEY, value)
+
+    @property
+    def atmbri(self):
+        """Return the brightness of the atmosphere light"""
+        return self._atmbri
+
+    @atmbri.setter
+    def atmbri(self, value: int):
+        """Set the brightness of the atmosphere light"""
+        _LOGGER.debug("PyDreoCeilingFan:atmbri.setter - %s", value)
+        self._send_command(ATMBRI_KEY, value)
+
+    @property
+    def atmcolor(self):
+        """Return the color of the atmosphere light"""
+        return self._atmcolor
+
+    @atmcolor.setter
+    def atmcolor(self, value: int):
+        """Set the color of the atmosphere light"""
+        _LOGGER.debug("PyDreoCeilingFan:atmcolor.setter - %s", value)
+        self._send_command(ATMCOLOR_KEY, value)
+
+    @property
     def oscillating(self) -> bool:
         return None
     
@@ -101,6 +164,12 @@ class PyDreoCeilingFan(PyDreoFanBase):
 
         self._is_on = self.get_state_update_value(state, FANON_KEY)
         self._light_on = self.get_state_update_value(state, LIGHTON_KEY)
+        self._brightness = self.get_state_update_value(state, BRIGHTNESS_KEY)
+        self._color_temp = self.get_state_update_value(state, COLORTEMP_KEY)
+        self._atmon = self.get_state_update_value(state, ATMON_KEY)
+        self._atmbri = self.get_state_update_value(state, ATMBRI_KEY)
+        self._atmcolor = self.get_state_update_value(state, ATMCOLOR_KEY)
+
 
     def handle_server_update(self, message):
         """Process a websocket update"""
@@ -113,4 +182,24 @@ class PyDreoCeilingFan(PyDreoFanBase):
 
         val_light_on = self.get_server_update_key_value(message, LIGHTON_KEY)
         if isinstance(val_light_on, bool):
-            self._light_on = val_light_on            
+            self._light_on = val_light_on
+
+        val_brightness = self.get_server_update_key_value(message, BRIGHTNESS_KEY)
+        if isinstance(val_brightness, int):
+            self._brightness = val_brightness
+
+        val_color_temp = self.get_server_update_key_value(message, COLORTEMP_KEY)
+        if isinstance(val_color_temp, int):
+            self._color_temp = val_color_temp
+
+        val_atmon = self.get_server_update_key_value(message, ATMON_KEY)
+        if isinstance(val_atmon, bool):
+            self._atmon = val_atmon
+
+        val_atmbri = self.get_server_update_key_value(message, ATMBRI_KEY)
+        if isinstance(val_atmbri, int):
+            self._atmbri = val_atmbri
+
+        val_atmcolor = self.get_server_update_key_value(message, ATMCOLOR_KEY)
+        if isinstance(val_atmcolor, int):
+            self._atmcolor = val_atmcolor
