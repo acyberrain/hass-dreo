@@ -12,7 +12,7 @@ from homeassistant.components.light import (
     LightEntity,
     LightEntityFeature,
 )
-from homeassistant.util.color_util import hs_to_rgb, rgb_to_hs
+from homeassistant.helpers.color import hs_to_rgb, rgb_to_hs
 
 from .haimports import *
 from .pydreo import PyDreo, PyDreoCeilingFan
@@ -119,7 +119,7 @@ class DreoFanRGBLight(DreoBaseDeviceHA, LightEntity):
     def hs_color(self) -> tuple[float, float] | None:
         if self.device.atmcolor is None:
             return None
-        # Dreo sends color as a single integer. Assuming it's BGR.
+        
         color_int = self.device.atmcolor
         blue = color_int & 255
         green = (color_int >> 8) & 255
