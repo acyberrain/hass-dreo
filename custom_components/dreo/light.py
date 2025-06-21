@@ -12,18 +12,20 @@ from homeassistant.components.light import (
     LightEntity,
     LightEntityFeature,
 )
-# Corrected import path and function names
 from homeassistant.util.color import (
     color_hs_to_RGB,
     color_RGB_to_hs,
 )
 
-
 from .haimports import *
 from .pydreo import PyDreo, PyDreoCeilingFan
 from .pydreo.constant import DreoDeviceType
 from .dreobasedevice import DreoBaseDeviceHA
-from .const import DOMAIN, PYDREO_MANAGER
+from .const import (
+    LOGGER, # This was the missing import
+    DOMAIN, 
+    PYDREO_MANAGER
+)
 
 _LOGGER = logging.getLogger(LOGGER)
 
@@ -129,7 +131,6 @@ class DreoFanRGBLight(DreoBaseDeviceHA, LightEntity):
         blue = color_int & 255
         green = (color_int >> 8) & 255
         red = (color_int >> 16) & 255
-        # Corrected function call
         return color_RGB_to_hs(red, green, blue)
 
     def turn_on(self, **kwargs: Any) -> None:
@@ -139,7 +140,6 @@ class DreoFanRGBLight(DreoBaseDeviceHA, LightEntity):
 
         if ATTR_HS_COLOR in kwargs:
             hs = kwargs[ATTR_HS_COLOR]
-            # Corrected function call
             r, g, b = color_hs_to_RGB(*hs)
             # Reconstruct the integer value. Assuming RGB.
             color_int = (r << 16) + (g << 8) + b
